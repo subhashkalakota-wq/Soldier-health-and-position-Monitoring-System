@@ -1,0 +1,37 @@
+🌡️ Temperature Sensor (LM35)
+	•	VCC → 5V
+	•	GND → GND
+	•	OUT → A0
+
+⸻
+
+❤️ Heartbeat Sensor
+	•	VCC → 5V
+	•	GND → GND
+	•	Signal → A1
+
+⸻
+
+📍 GPS Module (Neo-6M)
+	•	VCC → 5V
+	•	GND → GND
+	•	TX → D4
+	•	RX → D3
+
+⸻
+
+📡 GSM Module (SIM800L) ⚠️ Critical
+	•	VCC → External 3.7V battery (NOT Arduino 5V)
+	•	GND → GND
+	•	TX → D7
+	•	RX → D8
+
+👉 Important Note:
+SIM800L needs stable power (3.7V–4.2V). If powered from Arduino → it will NOT work properly.
+
+⸻
+
+🔋 Step 4: Power Setup
+	•	Arduino → USB / Adapter
+	•	GSM → Separate Li-ion battery (3.7V)
+	•	Common GND required
