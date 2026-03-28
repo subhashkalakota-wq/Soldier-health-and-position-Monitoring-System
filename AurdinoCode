@@ -1,0 +1,103 @@
+#include <SoftwareSerial.h>
+
+// GSM and GPS Pins
+SoftwareSerial gsm(7, 8);   // RX, TX for GSM
+SoftwareSerial gps(4, 3);   // RX, TX for GPS
+
+// Sensor Pins
+int tempPin = A0;
+int heartPin = A1;
+
+// Variables
+float temperature;
+int heartRate;
+
+String latitude = "";
+String longitude = "";
+
+void setup() {
+  Serial.begin(9600);
+  gsm.begin(9600);
+  gps.begin(9600);
+
+  Serial.println("System Started...");
+}
+
+// Function to read temperature (LM35)
+float readTemperature() {
+  int value = analogRead(tempPin);
+  float voltage = value * (5.0 / 1023.0);
+  float tempC = voltage * 100; // LM35
+  return tempC;
+}
+
+// Function to simulate heart rate (replace with real sensor logic)
+int readHeartRate() {
+  int value = analogRead(heartPin);
+  int bpm = map(value, 0, 1023, 60, 120);
+  return bpm;
+}
+
+// Function to get GPS data
+void getGPS() {
+  while (gps.available()) {
+    String data = gps.readStringUntil('\n');
+
+    if (data.startsWith("$GPGGA")) {
+      int commaIndex[15];
+      int index = 0;
+
+      for (int i = 0; i < data.length(); i++) {
+        if (data[i] == ',') {
+          commaIndex[index++] = i;
+        }
+      }
+
+      latitude = data.substring(commaIndex[1] + 1, commaIndex[2]);
+      longitude = data.substring(commaIndex[3] + 1, commaIndex[4]);
+    }
+  }
+}
+
+// Function to send SMS via GSM
+void sendSMS(String message) {
+  gsm.println("AT+CMGF=1");
+  delay(1000);
+  gsm.println("AT+CMGS=\"+91XXXXXXXXXX\""); // Replace with your number
+  delay(1000);
+  gsm.println(message);
+  delay(100);
+  gsm.write(26); // CTRL+Z to send SMS
+  delay(3000);
+}
+
+void loop() {
+
+  temperature = readTemperature();
+  heartRate = readHeartRate();
+  getGPS();
+
+  Serial.print("Temp: ");
+  Serial.print(temperature);
+  Serial.print(" C | Heart Rate: ");
+  Serial.print(heartRate);
+  Serial.print(" BPM | Lat: ");
+  Serial.print(latitude);
+  Serial.print(" | Lon: ");
+  Serial.println(longitude);
+
+  // Alert condition
+  if (heartRate > 110 || temperature > 38.0) {
+
+    String alertMessage = "ALERT!\n";
+    alertMessage += "Temp: " + String(temperature) + " C\n";
+    alertMessage += "Heart: " + String(heartRate) + " BPM\n";
+    alertMessage += "Location:\n";
+    alertMessage += "Lat: " + latitude + "\n";
+    alertMessage += "Lon: " + longitude;
+
+    sendSMS(alertMessage);
+  }
+
+  delay(5000);
+}
